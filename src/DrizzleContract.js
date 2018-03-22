@@ -102,11 +102,11 @@ class DrizzleContract {
       // TODO: FOR DEMO, MOVE MOVE MOVE
       //const name = contract.contractArtifact.contractName
       //contract.store.dispatch({type: 'CONTRACT_SYNC_IND', contractName: name})
-      
+
       // Dispatch tx to saga
       // When txhash received, will be value of stack ID
       contract.store.dispatch({type: 'SEND_CONTRACT_TX', contract, fnName, fnIndex, args, stackId})
-     
+
       // return stack ID
       return stackId
     }

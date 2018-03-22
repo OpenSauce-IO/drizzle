@@ -9,6 +9,8 @@ function createContractEventChannel({contract, eventName}) {
   const name = contract.contractArtifact.contractName
 
   return eventChannel(emit => {
+    console.log('contract', contract)
+    console.log('contract events', contract.events[eventName] == contract.events.StorageSet)
     const eventListener = contract.events[eventName]().on('data', event => {
       emit({type: 'EVENT_FIRED', name, event})
     })
@@ -41,13 +43,13 @@ function* callListenForContractEvent({contract, eventName}) {
  * Send and Cache
  */
 
-function createTxChannel({txObject, stackId, sendArgs = {}, contractName}) {
+function createTxChannel({txObject, stackId, sendArgs = {}, contract}) {
   var persistTxHash
+  const contractName = contract.contractArtifact.contractName
 
   return eventChannel(emit => {
     const txPromiEvent = txObject.send(sendArgs).on('transactionHash', txHash => {
       persistTxHash = txHash
-
       emit({type: 'TX_BROADCASTED', txHash, stackId})
       emit({type: 'CONTRACT_SYNC_IND', contractName})
     })
@@ -55,7 +57,9 @@ function createTxChannel({txObject, stackId, sendArgs = {}, contractName}) {
       emit({type: 'TX_CONFIRMAITON', confirmationReceipt: receipt, txHash: persistTxHash})
     })
     .on('receipt', receipt => {
+      console.log('show me', contract)
       emit({type: 'TX_SUCCESSFUL', receipt: receipt, txHash: persistTxHash})
+      // emit({type: 'CONTRACT_SYNCING', contract: contract })
       emit(END)
     })
     .on('error', error => {
@@ -89,7 +93,9 @@ function* callSendContractTx({contract, fnName, fnIndex, args, stackId}) {
 
   // Create the transaction object and execute the tx.
   const txObject = yield call(contract.methods[fnName], ...args)
-  const txChannel = yield call(createTxChannel, {txObject, stackId, sendArgs, contractName})
+  console.log('show txObject', txObject)
+  const txChannel = yield call(createTxChannel, {txObject, stackId, sendArgs, contract})
+  console.log('show txChannel', txChannel)
 
   try {
     while (true) {
@@ -117,10 +123,10 @@ function* callCallContractFn({contract, fnName, fnIndex, args, argsHash}) {
     delete args[args.length - 1]
     args.length = args.length - 1
   }
-  
+
   // Create the transaction object and execute the call.
   const txObject = yield call(contract.methods[fnName], ...args)
-  
+
   try {
     const callResult = yield call(txObject.call, callArgs)
 
@@ -132,8 +138,8 @@ function* callCallContractFn({contract, fnName, fnIndex, args, argsHash}) {
       value: callResult,
       fnIndex: fnIndex
     }
-  
-    yield put({type: 'GOT_CONTRACT_VAR', ...dispatchArgs})  
+
+    yield put({type: 'GOT_CONTRACT_VAR', ...dispatchArgs})
   }
   catch (error) {
     console.error(error)
@@ -146,7 +152,7 @@ function* callCallContractFn({contract, fnName, fnIndex, args, argsHash}) {
       error: error,
       fnIndex: fnIndex
     }
-  
+
     yield put({type: 'ERROR_CONTRACT_VAR', ...errorArgs})
   }
 }

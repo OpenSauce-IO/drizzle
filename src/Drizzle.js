@@ -36,7 +36,8 @@ class Drizzle {
       // Use Mist/MetaMask's provider.
       this.web3 = new Web3(window.web3.currentProvider)
 
-      console.log('Injected web3 detected.')
+      console.log('Injected web3 detected.', this.web3)
+
       this.store.dispatch({type: 'WEB3_INITIALIZED'})
 
       return this.getAccounts()
@@ -51,6 +52,7 @@ class Drizzle {
             var provider = new Web3.providers.WebsocketProvider(this.options.web3.fallback.url)
             this.web3 = new Web3(provider)
             this.store.dispatch({type: 'WEB3_INITIALIZED'})
+            console.log(this.web3)
             return this.getAccounts()
             break
           default:
@@ -129,12 +131,15 @@ class Drizzle {
       contractAddresses.push(this.contracts[contract].options.address)
     }
 
+    console.log('contracts', this.contracts)
+
     // Observe new blocks and re-sync contracts.
     this.web3.eth.subscribe('newBlockHeaders', (error, result) => {
       if (error)
       {
-        console.error('Error in block header subscription:')
-        console.error(error)
+        return
+        // console.error('Error in block header subscription:')
+        // console.error(error)
       }
     })
     .on('data', (blockHeader) => {
