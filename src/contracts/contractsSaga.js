@@ -9,8 +9,8 @@ function createContractEventChannel({contract, eventName}) {
   const name = contract.contractArtifact.contractName
 
   return eventChannel(emit => {
-    console.log('contract', contract)
-    console.log('contract events', contract.events[eventName] == contract.events.StorageSet)
+    // console.log('contract', contract)
+    // console.log('contract events', contract.events[eventName] == contract.events.StorageSet)
     const eventListener = contract.events[eventName]().on('data', event => {
       emit({type: 'EVENT_FIRED', name, event})
     })
@@ -57,7 +57,7 @@ function createTxChannel({txObject, stackId, sendArgs = {}, contract}) {
       emit({type: 'TX_CONFIRMAITON', confirmationReceipt: receipt, txHash: persistTxHash})
     })
     .on('receipt', receipt => {
-      console.log('show me', contract)
+      // console.log('show me', contract)
       emit({type: 'TX_SUCCESSFUL', receipt: receipt, txHash: persistTxHash})
       // emit({type: 'CONTRACT_SYNCING', contract: contract })
       emit(END)

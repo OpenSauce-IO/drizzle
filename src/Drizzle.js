@@ -131,8 +131,6 @@ class Drizzle {
       contractAddresses.push(this.contracts[contract].options.address)
     }
 
-    console.log('contracts', this.contracts)
-
     // Observe new blocks and re-sync contracts.
     this.web3.eth.subscribe('newBlockHeaders', (error, result) => {
       if (error)
